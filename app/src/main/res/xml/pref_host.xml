@@ -1,0 +1,70 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_hostname"
+        android:inputType="textUri"
+        android:key="hostname"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_hostname" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_port"
+        android:inputType="number"
+        android:key="port"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_port" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_username"
+        android:inputType="text"
+        android:key="username"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_username" />
+
+    <EditTextPreference
+        android:inputType="textPassword"
+        android:password="true"
+        android:key="password"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_password" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_path"
+        android:inputType="textUri"
+        android:key="path"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_path" />
+
+    <EditTextPreference
+        android:defaultValue="@string/pref_default_url_prefix"
+        android:inputType="textUri"
+        android:key="url_prefix"
+        android:maxLines="1"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_title_url_prefix" />
+
+    <Preference
+        android:key="test"
+        android:maxLines="1"
+        android:title="@string/test_preferences" />
+
+    <PreferenceCategory
+        android:title="@string/careful" />
+
+    <Preference
+        android:key="forget_keys"
+        android:maxLines="1"
+        android:title="@string/delete_keys" />
+
+</PreferenceScreen>

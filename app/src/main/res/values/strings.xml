@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">iscp</string>
+
+    <string-array name="pref_image_resize_labels">
+        <item>Any edge</item>
+        <item>Horizontal edge</item>
+        <item>Vertical edge</item>
+    </string-array>
+    <string-array name="pref_image_resize_values">
+        <item>longer edge</item>
+        <item>horizontal edge</item>
+        <item>vertical edge</item>
+    </string-array>
+
+    <string-array name="pref_image_quality_labels">
+        <item>Normal</item>
+        <item>High</item>
+        <item>Best</item>
+        <item>Low</item>
+    </string-array>
+    <string-array name="pref_image_quality_values">
+        <item>75</item>
+        <item>90</item>
+        <item>100</item>
+        <item>50</item>
+    </string-array>
+
+    <string name="pref_header_host">Host settings</string>
+    <string name="pref_title_hostname">Hostname</string>
+    <string name="pref_default_hostname">host.example.com</string>
+    <string name="pref_title_port">Port</string>
+    <string name="pref_default_port">22</string>
+    <string name="pref_title_username">Username</string>
+    <string name="pref_default_username">username</string>
+    <string name="pref_title_password">Password (only used once)</string>
+    <string name="pref_title_path">Remote path</string>
+    <string name="pref_default_path">/home/username/public_html/</string>
+    <string name="pref_title_url_prefix">URL prefix</string>
+    <string name="pref_default_url_prefix">https://host.example.com/~username/</string>
+
+    <string name="pref_header_image">Image settings</string>
+    <string name="pref_title_image_size">Image size</string>
+    <string name="pref_default_image_size">1000</string>
+    <string name="pref_title_image_resize_type">Set size of</string>
+    <string name="image_name_prefix">Image name or prefix</string>
+    <string name="image_upload_button_label">Upload</string>
+    <string name="image_upload_view_desc">Images to upload</string>
+    <string name="cancel_upload">Cancel</string>
+    <string name="title_alert_not_configured">Not yet configured</string>
+    <string name="message_alert_not_configured">You need to configure the application first.</string>
+    <string name="test_preferences">Set up keys and test SSH access</string>
+    <string name="delete_keys">Forget keys</string>
+    <string name="careful">Careful below</string>
+    <string name="pref_title_image_quality">Image quality</string>
+</resources>
