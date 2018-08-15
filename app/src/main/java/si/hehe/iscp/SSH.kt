@@ -1,7 +1,5 @@
 package si.hehe.iscp
 
-import android.content.SharedPreferences
-import android.util.Log
 import net.schmizz.sshj.AndroidConfig
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.common.KeyType
@@ -35,7 +33,7 @@ class SSH {
         Security.addProvider(org.spongycastle.jce.provider.BouncyCastleProvider())
     }
 
-    fun setupSSHAuth(
+    fun setupSSHKeyAccess(
             host: String,
             port: Int,
             username: String,
@@ -44,37 +42,40 @@ class SSH {
             uuid: String) {
         val ssh = SSHClient(AndroidConfig())
         val pubKey = extractSSHPublicKey(sshKeys, uuid)
-        try {
-            ssh.addHostKeyVerifier(PromiscuousVerifier())
 
-            ssh.connect(host, port)
-            ssh.authPassword(username, password)
+        ssh.addHostKeyVerifier(PromiscuousVerifier())
 
-            var session = ssh.startSession()
+        ssh.connect(host, port)
+        ssh.authPassword(username, password)
 
-            // remove old keys
-            Log.d("exec-command", """grep iscp-$uuid .ssh/authorized_keys &&
-                grep -v iscp-$uuid .ssh/authorized_keys > .ssh/authorized_keys-new &&
-                mv .ssh/authorized_keys-new .ssh/authorized_keys""")
-            session.exec("""grep iscp-$uuid .ssh/authorized_keys &&
-                grep -v iscp-$uuid .ssh/authorized_keys > .ssh/authorized_keys-new &&
-                mv .ssh/authorized_keys-new .ssh/authorized_keys""").join()
-            session = ssh.startSession()
-            // add new key
-            session.exec("echo '$pubKey' >> .ssh/authorized_keys").join()
-        } finally {
-            ssh.disconnect()
-            ssh.close()
-        }
+        var session = ssh.startSession()
 
+        session.exec("""grep iscp-$uuid .ssh/authorized_keys &&
+            grep -v iscp-$uuid .ssh/authorized_keys > .ssh/authorized_keys-new &&
+            mv .ssh/authorized_keys-new .ssh/authorized_keys""").join()
+
+        session = ssh.startSession()
+        session.exec("echo '$pubKey' >> .ssh/authorized_keys").join()
+
+        ssh.disconnect()
+        ssh.close()
     }
 
-    fun testSSHConnection(host: String, port: Int, username: String, key: KeyPair) {
+    fun testSSHKeys(host: String, port: Int, username: String, key: KeyPair) {
         val ssh = SSHClient(AndroidConfig())
         ssh.addHostKeyVerifier(PromiscuousVerifier())
         // ssh.loadKnownHosts()
         ssh.connect(host, port)
         ssh.authPublickey(username, InMemoryKeyProvider(key))
+        ssh.disconnect()
+    }
+
+    fun testSSHPassword(host: String, port: Int, username: String, password: String) {
+        val ssh = SSHClient(AndroidConfig())
+        ssh.addHostKeyVerifier(PromiscuousVerifier())
+        // ssh.loadKnownHosts()
+        ssh.connect(host, port)
+        ssh.authPassword(username, password)
         ssh.disconnect()
     }
 
@@ -99,7 +100,7 @@ class SSH {
         return oi.readObject() as KeyPair
     }
 
-    private fun extractSSHPublicKey(keyPair: KeyPair, uuid: String): String {
+    fun extractSSHPublicKey(keyPair: KeyPair, uuid: String): String {
         val pubKey = keyPair.public as RSAPublicKey
         val byteOs = ByteArrayOutputStream()
         val dos = DataOutputStream(byteOs as OutputStream)
@@ -114,14 +115,12 @@ class SSH {
 
     }
 
-    fun upload(prefs: SharedPreferences, localSourceFile: InMemorySourceFile, destFileName: String) {
+    fun upload(host: String, port: Int, username: String, keys: KeyPair, localSourceFile: InMemorySourceFile, destFileName: String) {
         val ssh = SSHClient(AndroidConfig())
         ssh.addHostKeyVerifier(PromiscuousVerifier())
         // ssh.loadKnownHosts()
-        ssh.connect(prefs.getString("hostname", "")!!, prefs.getString("port", "")!!.toInt())
-        ssh.authPublickey(
-                prefs.getString("username", ""),
-                InMemoryKeyProvider(deserializeKeys(prefs.getString("auth_ssh_key", "")!!)))
+        ssh.connect(host, port)
+        ssh.authPublickey(username, InMemoryKeyProvider(keys))
         val scp = ssh.newSCPFileTransfer().newSCPUploadClient()
         scp.copy(localSourceFile, destFileName)
         ssh.disconnect()

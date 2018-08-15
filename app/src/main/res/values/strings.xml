@@ -25,31 +25,89 @@
         <item>50</item>
     </string-array>
 
-    <string name="pref_header_host">Host settings</string>
+    <string name="pref_uuid">uuid</string>
+
+
+
+    <string name="pref_title_header_host">Host settings</string>
+
+    <string name="pref_hostname">hostname</string>
     <string name="pref_title_hostname">Hostname</string>
     <string name="pref_default_hostname">host.example.com</string>
+
+    <string name="pref_port">port</string>
     <string name="pref_title_port">Port</string>
     <string name="pref_default_port">22</string>
+
+    <string name="pref_username">username</string>
     <string name="pref_title_username">Username</string>
     <string name="pref_default_username">username</string>
-    <string name="pref_title_password">Password (only used once)</string>
+
+    <string name="pref_title_password">Password (only used for key setup)</string>
+    <string name="pref_password">password</string>
+
+    <string name="pref_path">file_prefix_path</string>
     <string name="pref_title_path">Remote path</string>
     <string name="pref_default_path">/home/username/public_html/</string>
+
+    <string name="pref_url_prefix">url_prefix_path</string>
     <string name="pref_title_url_prefix">URL prefix</string>
     <string name="pref_default_url_prefix">https://host.example.com/~username/</string>
 
+    <string name="pref_copy_ssh_pubkey">copy_public_key</string>
+    <string name="pref_title_copy_ssh_pubkey">Copy SSH public key to clipboard</string>
+
+    <string name="pref_setup_ssh_key">setup_ssh</string>
+    <string name="pref_title_setup_ssh_key">Set up SSH key auth</string>
+
+    <string name="pref_test_ssh">test_ssh</string>
+    <string name="pref_title_test_ssh">Test SSH access</string>
+
+    <string name="pref_careful">Careful below</string>
+
+    <string name="pref_ssh_keys">ssh_keys</string>
+    <string name="pref_title_generate_ssh_keys">Generate a new SSH key pair</string>
+
+
+
     <string name="pref_header_image">Image settings</string>
+
+    <string name="pref_image_size">image_size</string>
     <string name="pref_title_image_size">Image size</string>
     <string name="pref_default_image_size">1000</string>
+
+    <string name="pref_image_resize_type">image_resize_type</string>
+    <string name="pref_default_image_resize_type">any edge</string>
     <string name="pref_title_image_resize_type">Set size of</string>
+
+    <string name="pref_image_quality">image_quality</string>
+    <string name="pref_title_image_quality">Image quality</string>
+    <string name="pref_default_image_quality">75</string>
+
+
+    <string name="title_alert_not_configured">Missing configuration</string>
+    <string name="message_alert_not_configured">You need to configure the application first.</string>
+
+    <string name="image_upload_view_desc">Images to upload</string>
     <string name="image_name_prefix">Image name or prefix</string>
     <string name="image_upload_button_label">Upload</string>
-    <string name="image_upload_view_desc">Images to upload</string>
-    <string name="cancel_upload">Cancel</string>
-    <string name="title_alert_not_configured">Not yet configured</string>
-    <string name="message_alert_not_configured">You need to configure the application first.</string>
-    <string name="test_preferences">Set up keys and test SSH access</string>
-    <string name="delete_keys">Forget keys</string>
-    <string name="careful">Careful below</string>
-    <string name="pref_title_image_quality">Image quality</string>
+    <string name="image_upload_cancel_label">Cancel</string>
+
+    <string name="toast_prefs_initialized">Preferences initialized.</string>
+    <string name="toast_missing_auth_data">Cannot test SSH access: No password or SSH keys are set.</string>
+    <string name="toast_verifying_key">Verifying (using key)…</string>
+    <string name="toast_verifying_password">Verifying (using password)…</string>
+    <string name="toast_setup_ssh_keys">Setting up SSH key access…</string>
+    <string name="toast_error">Error: {0}</string>
+    <string name="toast_password_error">Password access error: {0}</string>
+    <string name="toast_generate_keys">Regenerated SSH keys (you will need to set access up again).</string>
+    <string name="toast_ssh_key_copied">Copied SSH public key to clipboard.</string>
+    <string name="toast_key_verified">SSH public key authentication successful.</string>
+    <string name="toast_password_verified">SSH password authentication successful.</string>
+    <string name="toast_urls_copied">Image URLs copied to clipboard.</string>
+    <string name="toast_ssh_key_setup_success">Key authentication configured successfully.</string>
+    <string name="toast_password_required">SSH password is required for automatic configuration.</string>
+
+    <string name="ok">OK</string>
+
 </resources>

@@ -3,7 +3,7 @@
     <EditTextPreference
         android:defaultValue="@string/pref_default_hostname"
         android:inputType="textUri"
-        android:key="hostname"
+        android:key="@string/pref_hostname"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
@@ -12,7 +12,7 @@
     <EditTextPreference
         android:defaultValue="@string/pref_default_port"
         android:inputType="number"
-        android:key="port"
+        android:key="@string/pref_port"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
@@ -21,7 +21,7 @@
     <EditTextPreference
         android:defaultValue="@string/pref_default_username"
         android:inputType="text"
-        android:key="username"
+        android:key="@string/pref_username"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
@@ -30,7 +30,7 @@
     <EditTextPreference
         android:inputType="textPassword"
         android:password="true"
-        android:key="password"
+        android:key="@string/pref_password"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
@@ -39,7 +39,7 @@
     <EditTextPreference
         android:defaultValue="@string/pref_default_path"
         android:inputType="textUri"
-        android:key="path"
+        android:key="@string/pref_path"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
@@ -48,23 +48,33 @@
     <EditTextPreference
         android:defaultValue="@string/pref_default_url_prefix"
         android:inputType="textUri"
-        android:key="url_prefix"
+        android:key="@string/pref_url_prefix"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:title="@string/pref_title_url_prefix" />
 
     <Preference
-        android:key="test"
+        android:key="@string/pref_setup_ssh_key"
         android:maxLines="1"
-        android:title="@string/test_preferences" />
-
-    <PreferenceCategory
-        android:title="@string/careful" />
+        android:title="@string/pref_title_setup_ssh_key" />
 
     <Preference
-        android:key="forget_keys"
+        android:key="@string/pref_copy_ssh_pubkey"
         android:maxLines="1"
-        android:title="@string/delete_keys" />
+        android:title="@string/pref_title_copy_ssh_pubkey" />
+
+    <Preference
+        android:key="@string/pref_test_ssh"
+        android:maxLines="1"
+        android:title="@string/pref_title_test_ssh" />
+
+    <PreferenceCategory
+        android:title="@string/pref_careful" />
+
+    <Preference
+        android:key="@string/pref_ssh_keys"
+        android:maxLines="1"
+        android:title="@string/pref_title_generate_ssh_keys" />
 
 </PreferenceScreen>

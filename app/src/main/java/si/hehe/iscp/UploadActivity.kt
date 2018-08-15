@@ -12,6 +12,7 @@ import android.os.Parcelable
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.view.View
+import android.widget.EditText
 import kotlinx.android.synthetic.main.activity_upload.*
 import net.schmizz.sshj.xfer.InMemorySourceFile
 import org.jetbrains.anko.defaultSharedPreferences
@@ -30,19 +31,22 @@ class UploadActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
-        val prefs = defaultSharedPreferences
-        if (prefs.getString("auth_ssh_key", "") == "") {
 
+        // try to focus on image name by default
+        findViewById<EditText>(R.id.upload_prefix).requestFocus()
+
+        val prefs = defaultSharedPreferences
+        if (prefs.getString(getString(R.string.pref_ssh_keys), "") == "") {
             val d = AlertDialog.Builder(this).create()
-            d.setTitle(getText(R.string.title_alert_not_configured))
-            d.setMessage(getText(R.string.message_alert_not_configured))
-            d.setButton(0, "OK") { _, _ -> finishActivity(0)}
+            d.setTitle(getString(R.string.title_alert_not_configured))
+            d.setMessage(getString(R.string.message_alert_not_configured))
+            d.setButton(0, getString(R.string.ok)) { _, _ -> finishActivity(0)}
             d.show()
         }
         upload_button.setOnClickListener { _ ->
             upload_progress_bar.visibility = View.VISIBLE
             handleUpload(intent)
-            upload_button.text = getText(R.string.cancel_upload)
+            upload_button.text = getString(R.string.image_upload_cancel_label)
             upload_button.setOnClickListener {
                 finish()
             }
@@ -54,12 +58,28 @@ class UploadActivity : AppCompatActivity() {
 
     private fun processImage(uri: Uri, index: Int) : String {
         val prefs = defaultSharedPreferences
+        val host = prefs.getString(getString(R.string.pref_hostname), "")!!
+        val port = prefs.getString(getString(R.string.pref_port), "22")!!.toInt()
+        val username = prefs.getString(getString(R.string.pref_username), "")!!
+        val keys = ssh.deserializeKeys(
+                defaultSharedPreferences.getString(
+                        getString(R.string.pref_ssh_keys), "")!!)
         val image = BitmapFactory.decodeStream(contentResolver.openInputStream(uri))
-        val imageSize = Integer.valueOf(prefs.getString("image_size", "1000")!!)
-        val imageScaling = prefs.getString("image_crop", "longer")!!
-        val imageQuality = Integer.valueOf(prefs.getString("image_quality", "75")!!)
-        val urlPrefix = prefs.getString("url_prefix", "")!!
-        val path = prefs.getString("path", "")!!
+        val imageSize = Integer.valueOf(prefs.getString(getString(R.string.pref_image_size),
+                getString(R.string.pref_default_image_size))!!)
+        val imageScaling = prefs.getString(getString(R.string.pref_image_resize_type),
+                getString(R.string.pref_default_image_resize_type))!!
+        val imageQuality = Integer.valueOf(prefs.getString(getString(R.string.pref_image_quality),
+                getString(R.string.pref_default_image_quality))!!)
+
+        // make sure paths end in slashes
+        val urlPrefix = if (prefs.getString(getString(R.string.pref_url_prefix), "")!!.endsWith("/"))
+            prefs.getString(getString(R.string.pref_url_prefix), "")!! else
+            prefs.getString(getString(R.string.pref_url_prefix), "")!! + "/"
+        val path = if (prefs.getString(getString(R.string.pref_path), "")!!.endsWith("/"))
+            prefs.getString(getString(R.string.pref_path), "") else
+            prefs.getString(getString(R.string.pref_path), "")!! + "/"
+
         val prefix = upload_prefix.text.toString()
         var width = 0
         var height = 0
@@ -110,7 +130,7 @@ class UploadActivity : AppCompatActivity() {
                     return ByteArrayInputStream(baos.toByteArray())
                 }
             }
-            ssh.upload(prefs, mf, File(path, filename).path)
+            ssh.upload(host, port, username, keys, mf, File(path, filename).path)
             baos.close()
         }
         return URI.create(urlPrefix).resolve(filename).toString() + "\n"
@@ -149,7 +169,7 @@ class UploadActivity : AppCompatActivity() {
         }
         val clipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboard.primaryClip = ClipData.newPlainText("urls", urls)
-        toast("urls copied to clipboard")
+        toast(getString(R.string.toast_urls_copied))
         finish()
 
     }

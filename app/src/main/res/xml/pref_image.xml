@@ -3,7 +3,7 @@
     <EditTextPreference
         android:defaultValue="@string/pref_default_image_size"
         android:inputType="number"
-        android:key="image_size"
+        android:key="@string/pref_image_size"
         android:maxLines="1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
@@ -16,7 +16,7 @@
         android:defaultValue="any"
         android:entries="@array/pref_image_resize_labels"
         android:entryValues="@array/pref_image_resize_values"
-        android:key="image_crop"
+        android:key="@string/pref_image_resize_type"
         android:negativeButtonText="@null"
         android:positiveButtonText="@null"
         android:title="@string/pref_title_image_resize_type" />
@@ -26,7 +26,7 @@
         android:id="@+id/image_quality_preference"
         android:entries="@array/pref_image_quality_labels"
         android:entryValues="@array/pref_image_quality_values"
-        android:key="image_quality"
+        android:key="@string/pref_image_quality"
         android:title="@string/pref_title_image_quality" />
 
 </PreferenceScreen>

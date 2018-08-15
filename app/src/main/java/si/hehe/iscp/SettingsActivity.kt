@@ -1,6 +1,8 @@
 package si.hehe.iscp
 
 import android.annotation.TargetApi
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
@@ -10,6 +12,7 @@ import android.preference.*
 import android.preference.Preference
 import android.view.MenuItem
 import org.jetbrains.anko.*
+import java.text.MessageFormat
 import java.util.*
 
 
@@ -29,17 +32,22 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         super.onCreate(savedInstanceState)
         setupActionBar()
 
-        if (!defaultSharedPreferences.contains("uuid")) {
+        if (!defaultSharedPreferences.contains(getString(R.string.pref_uuid))) {
+            val ssh = SSH()
+            val sshKeys = ssh.generateSSHKeys()
+            val keys = ssh.serializeKeys(sshKeys)
             with (defaultSharedPreferences.edit()) {
-                putString("uuid", UUID.randomUUID().toString())
+                putString(getString(R.string.pref_ssh_keys), keys)
+                remove(getString(R.string.pref_password))
+                putString(getString(R.string.pref_uuid), UUID.randomUUID().toString())
                 apply()
             }
-            toast("initialized")
+            toast(getString(R.string.toast_prefs_initialized))
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (title == "iscp") {
+        if (title == getString(R.string.app_name)) { // back on main screen exits
             val exit = Intent(Intent.ACTION_MAIN)
             exit.addCategory(Intent.CATEGORY_HOME)
             exit.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -92,61 +100,117 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("hostname"))
-            bindPreferenceSummaryToValue(findPreference("port"))
-            bindPreferenceSummaryToValue(findPreference("username"))
-            bindPreferenceSummaryToValue(findPreference("path"))
-            bindPreferenceSummaryToValue(findPreference("url_prefix"))
-
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_hostname)))
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_port)))
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_username)))
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_path)))
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_url_prefix)))
         }
 
         override fun onPreferenceTreeClick(preferenceScreen: PreferenceScreen?, preference: Preference?): Boolean {
-            if (preference?.key == "forget_keys") {
-                val prefs = defaultSharedPreferences
-                with (prefs.edit()) {
-                    remove("auth_ssh_key")
-                    remove("password")
-                    apply()
+
+            when (preference?.key) {
+
+                getString(R.string.pref_ssh_keys) -> {
+                    val ssh = SSH()
+                    val sshKeys = ssh.generateSSHKeys()
+                    val keys = ssh.serializeKeys(sshKeys)
+                    with (defaultSharedPreferences.edit()) {
+                        putString(getString(R.string.pref_ssh_keys), keys)
+                        apply()
+                    }
+                    toast(getString(R.string.toast_generate_keys))
                 }
-                toast("Removed keys and password.")
-            }
-            else if (preference?.key == "test") {
-                val prefs = defaultSharedPreferences
-                val host = prefs.getString("hostname", "")!!
-                val port = prefs.getString("port", "22")!!.toInt()
-                val username = prefs.getString("username", "")!!
-                val password = prefs.getString("password", "")!!
-                var keys = prefs.getString("auth_ssh_key", "")!!
-                val ssh = SSH()
-                if (keys.isBlank() && password.isBlank()) {
-                    longToast("You must set the password (it is only used to set up the public key authentication and then removed from settings).")
-                } else if (!password.isBlank() && keys.isBlank()) {
-                    doAsync {
-                        val sshKeys = ssh.generateSSHKeys()
-                        with(prefs.edit()) {
-                            keys = ssh.serializeKeys(sshKeys)
-                            putString("auth_ssh_key", keys)
-                            remove("password")
-                            apply()
+
+                getString(R.string.pref_copy_ssh_pubkey) -> {
+                    val ssh = SSH()
+                    val keys = ssh.deserializeKeys(
+                            defaultSharedPreferences.getString(
+                                    getString(R.string.pref_ssh_keys), "")!!)
+                    val uuid = defaultSharedPreferences.getString(getString(R.string.pref_uuid), "")!!
+                    val pubkey = ssh.extractSSHPublicKey(keys, uuid)
+                    val clipboard: ClipboardManager = activity.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    clipboard.primaryClip = ClipData.newPlainText("sshpubkey", pubkey)
+                    toast(getString(R.string.toast_ssh_key_copied))
+                }
+
+                getString(R.string.pref_test_ssh) -> {
+                    val prefs = defaultSharedPreferences
+                    val host = prefs.getString(getString(R.string.pref_hostname), "")!!
+                    val port = prefs.getString(getString(R.string.pref_port), "22")!!.toInt()
+                    val username = prefs.getString(getString(R.string.pref_username), "")!!
+                    val password = prefs.getString(getString(R.string.pref_password), "")!!
+                    val keys = prefs.getString(getString(R.string.pref_ssh_keys), "")!!
+                    val ssh = SSH()
+                    if (keys.isBlank() && password.isBlank()) {
+                        longToast(getString(R.string.toast_missing_auth_data))
+                    } else if (!password.isBlank()) {
+                        doAsync {
+                            uiThread { toast(getString(R.string.toast_verifying_password)) }
+                            try {
+                                ssh.testSSHPassword(host, port, username, password)
+                                uiThread { toast(getString(R.string.toast_password_verified)) }
+                            } catch (e: Exception) {
+                                uiThread {
+                                    toast(MessageFormat.format(
+                                            getString(R.string.toast_error), e.message))
+                                }
+                            }
                         }
-                        uiThread { toast("Setting up ssh auth...") }
-                        try {
-                            ssh.setupSSHAuth(host, port, username, password, sshKeys, prefs.getString("uuid", "")!!)
-                        } catch (e: Exception) {
-                            uiThread { toast("Setup failed: ${e.message}") }
+                    } else {
+                        doAsync {
+                            val sshKeys = ssh.deserializeKeys(keys)
+                            uiThread { toast(getString(R.string.toast_verifying_key)) }
+                            try {
+                                ssh.testSSHKeys(host, port, username, sshKeys)
+                                uiThread { toast(getString(R.string.toast_key_verified)) }
+                            } catch (e: Exception) {
+                                uiThread {
+                                    toast(MessageFormat.format(
+                                            getString(R.string.toast_error), e.message))
+                                }
+                            }
                         }
                     }
                 }
-                if (!keys.isBlank()) {
-                    doAsync {
-                        val sshKeys = ssh.deserializeKeys(keys)
-                        uiThread { toast("Verifying...") }
-                        try {
-                            ssh.testSSHConnection(host, port, username, sshKeys)
-                        } catch (e: Exception) {
-                            uiThread { toast("Verification failed: ${e.message}") }
-                        } finally {
-                            uiThread { toast("SSH public key authentication successful.") }
+
+                getString(R.string.pref_setup_ssh_key) -> {
+                    val prefs = defaultSharedPreferences
+                    val host = prefs.getString(getString(R.string.pref_hostname), "")!!
+                    val port = prefs.getString(getString(R.string.pref_port), "22")!!.toInt()
+                    val username = prefs.getString(getString(R.string.pref_username), "")!!
+                    val password = prefs.getString(getString(R.string.pref_password), "")!!
+                    val keys = prefs.getString(getString(R.string.pref_ssh_keys), "")!!
+                    val ssh = SSH()
+                    if (password.isBlank()) {
+                        toast(getString(R.string.toast_password_required))
+                    } else {
+                        doAsync {
+                            try {
+                                ssh.testSSHPassword(host, port, username, password)
+                                val sshKeys = ssh.deserializeKeys(keys)
+                                with(prefs.edit()) {
+                                    remove(getString(R.string.pref_password))
+                                    apply()
+                                }
+                                uiThread { toast(getString(R.string.toast_setup_ssh_keys)) }
+                                try {
+                                    ssh.setupSSHKeyAccess(host, port, username, password, sshKeys,
+                                            prefs.getString(getString(R.string.pref_uuid), "")!!)
+                                    ssh.testSSHKeys(host, port, username, sshKeys)
+                                    uiThread { toast(getString(R.string.toast_ssh_key_setup_success)) }
+                                } catch (e: Exception) {
+                                    uiThread {
+                                        toast(MessageFormat.format(
+                                                getString(R.string.toast_error), e.message))
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                uiThread {
+                                    toast(MessageFormat.format(
+                                            getString(R.string.toast_password_error), e.message))
+                                }
+                            }
                         }
                     }
                 }
@@ -176,9 +240,9 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("image_size"))
-            bindPreferenceSummaryToValue(findPreference("image_crop"))
-            bindPreferenceSummaryToValue(findPreference("image_quality"))
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_image_size)))
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_image_resize_type)))
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_image_quality)))
         }
 
         override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -200,9 +264,9 @@ class SettingsActivity : AppCompatPreferenceActivity() {
          */
         private val sBindPreferenceSummaryToValueListener = Preference.OnPreferenceChangeListener { preference, value ->
             val stringValue = value.toString()
-            if (preference::class == ListPreference::class) {
-                val lp = preference as ListPreference
-                preference.summary = lp.entries.getOrElse(lp.findIndexOfValue(stringValue)) { "default" }
+            if (preference is ListPreference) {
+                preference.summary = preference.entries.getOrElse(
+                        preference.findIndexOfValue(stringValue)) { "default" }
             } else {
                 preference.summary = stringValue
             }

@@ -4,7 +4,7 @@
 
     <header
         android:fragment="si.hehe.iscp.SettingsActivity$HostSettingsFragment"
-        android:title="@string/pref_header_host" />
+        android:title="@string/pref_title_header_host" />
 
     <header
         android:fragment="si.hehe.iscp.SettingsActivity$ImageSettingsFragment"
